@@ -38,6 +38,10 @@ module.exports = function(config) {
             included: false
         },
         {
+            pattern: 'data/**/*.js',
+            included: false
+        },
+        {
             pattern: 'ui/**/*.js',
             included: false
         },
@@ -90,7 +94,11 @@ module.exports = function(config) {
             included: false
         },
         {
-            pattern: 'node_modules/**(jshint|bluebird|mr|montage-testing)/**/*',
+            pattern: 'node_modules/jshint/**/*',
+            included: false
+        },
+        {
+            pattern: 'node_modules/**(bluebird|mr|montage-testing)/**/*',
             included: false
         }
     ],
@@ -103,6 +111,7 @@ module.exports = function(config) {
     preprocessors: {
         'montage.js': 'coverage',
         'core/**/*.js': 'coverage',
+        'data/**/*.js': 'coverage',
         'ui/**/*.js': 'coverage',
         'composer/**/*.js': 'coverage',
         'window-loader/**/*.js': 'coverage'
