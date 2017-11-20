@@ -115,4 +115,4 @@ var deserializeObjectBindings = exports.deserializeObjectBindings = function (de
 };
 
 //deprecated
-Deserializer.defineDeserializationUnit("bindings", deserializeObjectBindings);
+// Deserializer.defineDeserializationUnit("bindings", deserializeObjectBindings);
