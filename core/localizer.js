@@ -486,6 +486,10 @@ var Localizer = exports.Localizer = Montage.specialize( /** @lends Localizer.pro
         value: Object.create(null)
     },
 
+    missingKeys: {
+        value: {}
+    },
+
     /**
      * Localize a key and return a message function.
      *
@@ -516,7 +520,9 @@ var Localizer = exports.Localizer = Montage.specialize( /** @lends Localizer.pro
             if (this._messages && key in this._messages) {
                 message = this._messages[key];
                 type = typeof message;
-
+                if (this.missingKeys[key]) {
+                    delete this.missingKeys[key];
+                }
                 if (type === "function") {
                     return message;
                 } else if (type === "object") {
@@ -527,6 +533,9 @@ var Localizer = exports.Localizer = Montage.specialize( /** @lends Localizer.pro
                     message = message.message;
                 }
             } else {
+                if (this._messages) {
+                    this.missingKeys[key] = defaultMessage;
+                }
                 message = defaultMessage;
             }
 
