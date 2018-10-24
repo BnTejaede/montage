@@ -56,7 +56,7 @@ exports.DataService = Montage.specialize(/** @lends DataService.prototype */ {
     deserializeSelf: {
         value:function (deserializer) {
             var self = this,
-                result = null,
+                result = this,
                 value;
 
             value = deserializer.getProperty("childServices");
