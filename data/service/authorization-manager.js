@@ -291,7 +291,8 @@ exports.AuthorizationManager = Montage.specialize(/** @lends AuthorizationManage
             } else {
                 //[TJ] This will only work for data services with a single authorization-service    
                 authorizationPromises = this._authorizationsForDataService(dataService);
-                
+
+
                 if (authorizationPromises.length) {
                     return Promise.all(authorizationPromises);
                 } else if (dataService.authorizationPolicy === AuthorizationPolicy.ON_DEMAND && !didFailAuthorization) {
@@ -397,14 +398,22 @@ exports.AuthorizationManager = Montage.specialize(/** @lends AuthorizationManage
 
     clearAuthorizationForService: {
         value: function (dataService) {
-            var dataServiceInfo = Montage.getInfoForObject(dataService),
-                moduleID, i, n;
+            var moduleID, i, n;
 
             for (i = 0, n = dataService.authorizationServices.length; i < n; ++i) {
                 moduleID = dataService.authorizationServices[i];
+                this.clearAuthorizationForProvider(this._providersByModuleID.get(moduleID));
                 if (this._authorizationsByProviderModuleID.has(moduleID)) {
                     this._authorizationsByProviderModuleID.delete(moduleID);
                 }
+            }
+        }
+    },
+
+    clearAuthorizationForProvider: {
+        value: function (provider) {
+            if (provider && typeof provider.logOut === "function") {
+                provider.logOut();
             }
         }
     }
