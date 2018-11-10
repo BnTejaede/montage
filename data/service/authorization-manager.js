@@ -292,7 +292,6 @@ exports.AuthorizationManager = Montage.specialize(/** @lends AuthorizationManage
                 //[TJ] This will only work for data services with a single authorization-service    
                 authorizationPromises = this._authorizationsForDataService(dataService);
 
-
                 if (authorizationPromises.length) {
                     return Promise.all(authorizationPromises);
                 } else if (dataService.authorizationPolicy === AuthorizationPolicy.ON_DEMAND && !didFailAuthorization) {
@@ -398,24 +397,82 @@ exports.AuthorizationManager = Montage.specialize(/** @lends AuthorizationManage
 
     clearAuthorizationForService: {
         value: function (dataService) {
-            var moduleID, i, n;
+            var promises = [],
+                promise, moduleID, i, n;
+
 
             for (i = 0, n = dataService.authorizationServices.length; i < n; ++i) {
                 moduleID = dataService.authorizationServices[i];
-                this.clearAuthorizationForProvider(this._providersByModuleID.get(moduleID));
+                promise = this.clearAuthorizationForProvider(this._providersByModuleID.get(moduleID));
+                promises.push(promise);
+                promise = this._clearAuthorizationFromService(dataService);
+                promises.push(promise);
                 if (this._authorizationsByProviderModuleID.has(moduleID)) {
                     this._authorizationsByProviderModuleID.delete(moduleID);
                 }
             }
+            return Promise.all(promises);
+        }
+    },
+
+
+    _clearAuthorizationFromService: {
+        value: function (dataService) {
+            var self = this,
+                authorization = dataService.authorization,
+                result;
+            dataService.authorization = null;
+
+            if (Array.isArray(authorization)) {
+                result =  Promise.all(authorization.map(function (item) {
+                    return self._callClearOnAuthorization(item);
+                }));
+            } else {
+                result = self._callClearOnAuthorization(authorization);
+            }
+
+            return result;
+        }
+    },
+
+    _callClearOnAuthorization: {
+        value: function (authorization) {
+            var result = this.nullPromise;
+            if (authorization && authorization.clear && typeof authorization.clear === "function") {
+                result = authorization.clear();
+            }
+            return result;
         }
     },
 
     clearAuthorizationForProvider: {
         value: function (provider) {
+            var result = null;
             if (provider && typeof provider.logOut === "function") {
-                provider.logOut();
+                result = provider.logOut();
             }
+            return result;
         }
+    },
+
+
+    /**
+     * A shared promise resolved with a value of
+     * `null`
+     *
+     * @type {external:Promise}
+     */
+    nullPromise: {
+        get: function () {
+            if (!exports.AuthorizationManager._nullPromise) {
+                exports.AuthorizationManager._nullPromise = Promise.resolve(null);
+            }
+            return exports.AuthorizationManager._nullPromise;
+        }
+    },
+
+    _nullPromise: {
+        value: undefined
     }
 
 });
