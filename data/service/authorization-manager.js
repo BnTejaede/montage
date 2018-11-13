@@ -224,13 +224,14 @@ exports.AuthorizationManager = Montage.specialize(/** @lends AuthorizationManage
 
     _notifyDataService: {
         value: function (dataService) {
-            var i, n;
+            var self = this, 
+                i, n;
 
             if (this._canNotifyDataService(dataService)) {
                 return this._providersForDataService(dataService).then(function (services) {
                     for (i = 0, n = services.length; i < n; i++) {
                         //We tell the data service we're authorizing about authorizationService we create and are about to use.
-                        dataService.authorizationManagerWillAuthorizeWithService(this, services[i]);
+                        dataService.authorizationManagerWillAuthorizeWithService(self, services[i]);
                     }
                 });
             }
@@ -297,8 +298,8 @@ exports.AuthorizationManager = Montage.specialize(/** @lends AuthorizationManage
                 } else if (dataService.authorizationPolicy === AuthorizationPolicy.ON_DEMAND && !didFailAuthorization) {
                     return Promise.resolve(null);
                 } else {                
-                    authorizationPromises = this._authorizationsForDataService(dataService, true);
                     return self._notifyDataService(dataService).then(function () {
+                        authorizationPromises = self._authorizationsForDataService(dataService, true);
                         var useModal = application.applicationModal && self.authorizationManagerPanel.runModal;
                         return useModal ? self.authorizationManagerPanel.runModal() : Promise.all(authorizationPromises);
                     }).then(function(authorizations) {
