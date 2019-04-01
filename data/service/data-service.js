@@ -1420,8 +1420,6 @@ exports.DataService = Montage.specialize(/** @lends DataService.prototype */ {
                         return mapping.mapRawDataToObjectProperty(data, object, propertyName);
                     });
                 } else {
-                    //This was already done a few lines up. Why are we re-doing this?
-                    Object.assign(data, self.snapshotForObject(object));
                     result = mapping.mapRawDataToObjectProperty(data, object, propertyName);
                     if (!this._isAsync(result)) {
                         result = this.nullPromise;
