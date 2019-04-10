@@ -86,7 +86,7 @@ exports.DataService = Montage.specialize(/** @lends DataService.prototype */ {
 
             value = deserializer.getProperty("childServices");
             if (value) {
-                this._childServices = value;
+                this._childServices = new Set(value);
             }
 
             return this;
@@ -251,36 +251,30 @@ exports.DataService = Montage.specialize(/** @lends DataService.prototype */ {
 
     addChildServices: {
         value: function (childServices) {
-            var i, countI, iChild, j, countJ, mappings, jMapping, types, jType, jResult, typesPromises;
+            var iterator = childServices.values(), child, i, countI, mappings, iMapping, types, iType, iResult, typesPromises;
 
-            for(i=0, countI = childServices.length;(i<countI);i++) {
-                iChild = childServices[i];
-
-                if((types = iChild.types)) {
+            while ((child = iterator.next().value)) {
+                if((types = child.types)) {
                     this._registerTypesByModuleId(types);
 
-                    for(j=0, countJ = types.length;(j<countJ);j++ ) {
-                        jType = types[j];
-                        jResult = this._makePrototypeForType(iChild, jType);
-                        if(Promise.is(jResult)) {
-                            (typesPromises || (typesPromises = [])).push(jResult);
+                    for(i=0, countI = types.length;(i<countI);i++ ) {
+                        iType = types[i];
+                        iResult = this._makePrototypeForType(child, iType);
+                        if(Promise.is(iResult)) {
+                            (typesPromises || (typesPromises = [])).push(iResult);
                         }
                     }
 
                 }
 
-                if((mappings = iChild.mappings)) {
-                    for(j=0, countJ = mappings.length;(j<countJ);j++ ) {
-                        jMapping = mappings[j];
-                        iChild.addMappingForType(jMapping, jMapping.objectDescriptor);
+                if((mappings = child.mappings)) {
+                    for(i=0, countI = mappings.length;(i<countI);i++ ) {
+                        iMapping = mappings[i];
+                        child.addMappingForType(iMapping, iMapping.objectDescriptor);
                     }
                 }
 
-                this.addChildService(iChild);
-
-        //Process Mappings
-        //this._childServiceMappings / addMappingForType(mapping, type)
-
+                this.addChildService(child);
             }
 
             if(typesPromises) {
